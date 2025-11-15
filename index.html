@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hacker Password Strength Checker</title>
+
+<style>
+    /* MATRIX BACKGROUND */
+    body {
+        margin: 0;
+        overflow: hidden;
+        font-family: 'Courier New', monospace;
+        color: #00ff41;
+    }
+
+    canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: -1;
+    }
+
+    /* Main UI Box */
+    .container {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 380px;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 35px;
+        border: 1px solid #00ff41;
+        border-radius: 10px;
+        backdrop-filter: blur(3px);
+        box-shadow: 0 0 20px rgba(0, 255, 65, 0.6);
+    }
+
+    h2 {
+        text-align: center;
+        letter-spacing: 2px;
+        margin-bottom: 20px;
+        color: #00ff41;
+    }
+
+    input {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        border-radius: 8px;
+        border: 1px solid #00ff41;
+        background: black;
+        color: #00ff41;
+        margin-bottom: 15px;
+    }
+
+    input:focus {
+        outline: none;
+        border-color: #00ff99;
+    }
+
+    /* Strength bar */
+    .bar-container {
+        width: 100%;
+        height: 12px;
+        background: #003b1f;
+        border-radius: 10px;
+        margin-top: 15px;
+    }
+
+    .bar {
+        height: 100%;
+        width: 0%;
+        border-radius: 10px;
+        transition: 0.5s;
+    }
+
+    #label {
+        margin-top: 10px;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    /* Requirements */
+    .req-box {
+        margin-top: 20px;
+        font-size: 14px;
+        padding: 15px;
+        border: 1px solid #00ff41;
+        border-radius: 10px;
+        background: rgba(0, 255, 65, 0.1);
+    }
+
+    .good { color: #00ff7f; }
+    .bad { color: #ff4f4f; }
+</style>
+
+</head>
+<body>
+
+<!-- MATRIX BACKGROUND CANVAS -->
+<canvas id="matrix"></canvas>
+
+<div class="container">
+    <h2>Hacker Password Checker</h2>
+
+    <input type="password" id="password" placeholder="Enter Password" oninput="checkStrength()">
+
+    <div class="bar-container">
+        <div id="strengthBar" class="bar"></div>
+    </div>
+
+    <p id="label">Strength: -</p>
+
+    <div class="req-box">
+        <p id="req-length" class="bad">• Minimum 8 characters</p>
+        <p id="req-upper" class="bad">• Must contain uppercase (A-Z)</p>
+        <p id="req-lower" class="bad">• Must contain lowercase (a-z)</p>
+        <p id="req-number" class="bad">• Must contain number (0-9)</p>
+        <p id="req-special" class="bad">• Must contain symbol (!, @, #, $, %)</p>
+    </div>
+</div>
+
+<script>
+/* MATRIX BACKGROUND ANIMATION */
+const canvas = document.getElementById("matrix");
+const ctx = canvas.getContext("2d");
+
+canvas.height = window.innerHeight;
+canvas.width = window.innerWidth;
+
+const letters = "01 010110 1010 110101 0101";
+const matrix = letters.split("");
+
+const fontSize = 16;
+const columns = canvas.width / fontSize;
+
+const drops = Array(Math.floor(columns)).fill(1);
+
+function drawMatrix() {
+    ctx.fillStyle = "rgba(0, 0, 0, 0.08)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "#00ff41";
+    ctx.font = fontSize + "px monospace";
+
+    for (let i = 0; i < drops.length; i++) {
+        let text = matrix[Math.floor(Math.random() * matrix.length)];
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+        drops[i]++;
+
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.95) {
+            drops[i] = 0;
+        }
+    }
+}
+
+setInterval(drawMatrix, 40);
+
+/* PASSWORD CHECKER */
+function checkStrength() {
+    let password = document.getElementById("password").value;
+    let bar = document.getElementById("strengthBar");
+    let label = document.getElementById("label");
+
+    let r1 = document.getElementById("req-length");
+    let r2 = document.getElementById("req-upper");
+    let r3 = document.getElementById("req-lower");
+    let r4 = document.getElementById("req-number");
+    let r5 = document.getElementById("req-special");
+
+    let score = 0;
+
+    if (password.length >= 8) { score++; r1.className = "good"; }
+    else { r1.className = "bad"; }
+
+    if (/[A-Z]/.test(password)) { score++; r2.className = "good"; }
+    else { r2.className = "bad"; }
+
+    if (/[a-z]/.test(password)) { score++; r3.className = "good"; }
+    else { r3.className = "bad"; }
+
+    if (/[0-9]/.test(password)) { score++; r4.className = "good"; }
+    else { r4.className = "bad"; }
+
+    if (/[@$!%*?&#]/.test(password)) { score++; r5.className = "good"; }
+    else { r5.className = "bad"; }
+
+    let colors = ["red", "orangered", "gold", "yellowgreen", "lime", "#00ff41"];
+    let text = ["Very Weak", "Weak", "Medium", "Good", "Strong", "Very Strong"];
+
+    bar.style.width = (score * 20) + "%";
+    bar.style.background = colors[score];
+    label.innerText = "Strength: " + text[score];
+}
+</script>
+
+</body>
+</html>
